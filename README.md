@@ -15,12 +15,60 @@ Example Azure Functions App in Java
 
 This repo contains code for the runtime host used by the [Azure Functions](https://docs.microsoft.com/en-us/azure/azure-functions/) service. The Azure Functions runtime builds upon the [Azure WebJobs SDK](https://github.com/Azure/azure-webjobs-sdk) to provide a hosting platform for functions written in many different [languages](https://docs.microsoft.com/en-us/azure/azure-functions/supported-languages) and supporting a wide variety of [triggers and bindings](https://docs.microsoft.com/en-us/azure/azure-functions/functions-triggers-bindings?tabs=csharp#supported-bindings).
 
-### License
+### Build
+Run the function localy:
+```
+mvn clean package
+mvn azure-functions:run
+```
 
-This project is under the benevolent umbrella of the [.NET Foundation](http://www.dotnetfoundation.org/) and is licensed under [the MIT License](LICENSE.txt)
+Deploy the function project to Azure:
+```
+mvn azure-functions:deploy
+```
 
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+### Describe Files
 
-### Questions
+##### pom.xml
+``` xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-assembly-plugin</artifactId>
+    <executions>
+        <execution>
+            <phase>package</phase>
+            <goals>
+                <goal>single</goal>
+            </goals>
+            <configuration>
+                <appendAssemblyId>false</appendAssemblyId>
+                <descriptors>
+                    <descriptor>${basedir}/assembly.xml</descriptor>
+                </descriptors>
+                <finalName>${project.artifactId}</finalName>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
+##### assembly.xml
+The Assembly Plugin for Maven enables developers to combine project output into a single distributable archive that also contains dependencies, modules, site documentation, and other files.
+``` xml
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+    <id>zip</id>
+    <includeBaseDirectory>false</includeBaseDirectory>
 
-See the [getting help](https://github.com/Azure/azure-webjobs-sdk-script/wiki#getting-help) section in the wiki.
+    <formats>
+        <format>zip</format>
+    </formats>
+    
+    <fileSets>
+        <fileSet>
+            <directory>${project.build.directory}/azure-functions/${functionAppName}/</directory>
+            <outputDirectory>/</outputDirectory>
+        </fileSet>
+    </fileSets>
+</assembly>
+```
